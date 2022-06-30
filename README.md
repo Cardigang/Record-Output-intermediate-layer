@@ -7,7 +7,8 @@ A total of three ways to read the middle tier are recorded:
             if i == 2:
                 ReLu_out = x
           print('ReLu_out.shape：\n\t',ReLu_out.shape)
-2.Hook method: record the layer input and output, check the result
+          
+2. Hook method: record the layer input and output, check the result
                 class TestForHook(nn.Module):
                     def __init__(self):
                         super().__init__()
