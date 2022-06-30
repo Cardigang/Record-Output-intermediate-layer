@@ -1,43 +1,45 @@
 # Record-Output-intermediate-layer
 A model is being developed that requires an output middle layer to document existing methods
 A total of three ways to read the middle tier are recorded:
-1. Common, simple, but expensive memory and computation
+1. Common, simple, but expensive memory and computation:
+
           for i in range(len(model)):
-            x = model[i](x)
-            if i == 2:
-                ReLu_out = x
+              x = model[i](x)
+              if i == 2:
+                  ReLu_out = x
           print('ReLu_out.shape：\n\t',ReLu_out.shape)
           
-2. Hook method: record the layer input and output, check the result
-                class TestForHook(nn.Module):
-                    def __init__(self):
-                        super().__init__()
+2. Hook method: record the layer input and output, check the result:
 
-                        self.linear_1 = nn.Linear(in_features=2, out_features=2)
-                        self.linear_2 = nn.Linear(in_features=2, out_features=1)
-                        self.relu = nn.ReLU()
-                        self.relu6 = nn.ReLU6()
-                        self.initialize()
+          class TestForHook(nn.Module):
+              def __init__(self):
+                  super().__init__()
+                  self.linear_1 = nn.Linear(in_features=2, out_features=2)
+                  self.linear_2 = nn.Linear(in_features=2, out_features=1)
+                  self.relu = nn.ReLU()
+                  self.relu6 = nn.ReLU6()
+                  self.initialize()
 
-                    def forward(self, x):
-                        linear_1 = self.linear_1(x)
-                        linear_2 = self.linear_2(linear_1)
-                        relu = self.relu(linear_2)
-                        relu_6 = self.relu6(relu)
-                        layers_in = (x, linear_1, linear_2)
-                        layers_out = (linear_1, linear_2, relu)
-                        return relu_6, layers_in, layers_out
+              def forward(self, x):
+                  linear_1 = self.linear_1(x)
+                  linear_2 = self.linear_2(linear_1)
+                  relu = self.relu(linear_2)
+                  relu_6 = self.relu6(relu)
+                  layers_in = (x, linear_1, linear_2)
+                  layers_out = (linear_1, linear_2, relu)
+                  return relu_6, layers_in, layers_out
+          features_in_hook = []
+          features_out_hook = []
 
-                features_in_hook = []
-                features_out_hook = []
+          def hook(module, fea_in, fea_out):
+              features_in_hook.append(fea_in)
+              features_out_hook.append(fea_out)
+              return None
 
-                def hook(module, fea_in, fea_out):
-                    features_in_hook.append(fea_in)
-                    features_out_hook.append(fea_out)
-                    return None
-
-                net = TestForHook()
+          net = TestForHook()
+          
 3. The most recommended, optimized, Torchvision method:
+
         class IntermediateLayerGetter(nn.ModuleDict):
             """
             Module wrapper that returns intermediate layers from a model
@@ -55,7 +57,6 @@ A total of three ways to read the middle tier are recorded:
                     the key of the dict, and the value of the dict is the name
                     of the returned activation (which the user can specify).
             """
-
             def __init__(self, model, return_layers):
                 if not set(return_layers).issubset([name for name, _ in model.named_children()]):
                     raise ValueError("return_layers are not present in model")
